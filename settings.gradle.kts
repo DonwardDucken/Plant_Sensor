@@ -22,5 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Plant_Sensor"
+rootProject.name = "Plant_sensor"
 include(":app")
+ 
