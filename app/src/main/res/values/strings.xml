@@ -1,3 +1,99 @@
 <resources>
-    <string name="app_name">Plant_sensor</string>
+    <string name="app_name">Plant Sensor</string>
+    <string name="app_subtitle">Monitor your green friends</string>
+
+    <!-- Navigation & Tabs -->
+    <string name="tab_status">Status</string>
+    <string name="tab_info">Info</string>
+    <string name="nav_my_plants">My Plants</string>
+    <string name="nav_browse">Browse</string>
+    <string name="nav_plant">Plant</string>
+
+    <!-- Headers -->
+    <string name="header_botany">Botanical Details</string>
+    <string name="header_care_guide">Care Guide</string>
+    <string name="header_about">About</string>
+    <string name="header_ideal_conditions">Ideal Conditions</string>
+
+    <!-- Labels -->
+    <string name="label_species">Species</string>
+    <string name="label_category">Category</string>
+    <string name="label_origin">Origin</string>
+    <string name="label_sunlight">Light</string>
+    <string name="label_watering">Water</string>
+    <string name="label_fertilizer">Fertilizer</string>
+    <string name="label_last_watered">Last Watered</string>
+    <string name="label_room_select">Select Room</string>
+    <string name="label_plant_type">Plant Type</string>
+    <string name="label_sensor_connect">Connect Sensor</string>
+    <string name="label_encyclopedia_entry">Encyclopedia Entry</string>
+    <string name="label_history_moisture">History: Soil Moisture</string>
+    <string name="label_history_temp">History: Temperature</string>
+    <string name="label_history_light">History: Light</string>
+    <string name="label_history_conductivity">History: Conductivity</string>
+    <string name="unit_temp">°C</string>
+    <string name="unit_moisture">%%</string>
+    <string name="unit_light"> Lux</string>
+    <string name="unit_conductivity"> µS/cm</string>
+
+    <!-- Buttons -->
+    <string name="button_water">Water Now</string>
+    <string name="button_add_plant">Add Plant</string>
+    <string name="button_add_room">+ New Room</string>
+    <string name="button_save">Save</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_scan">Scan</string>
+    <string name="button_delete">Delete</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_new_plant">New Plant</string>
+    <string name="dialog_new_room">Create Room</string>
+    <string name="dialog_delete_plant_title">Delete Plant</string>
+    <string name="dialog_delete_plant_message">Do you really want to delete \"%s\"?</string>
+    <string name="dialog_edit_notes_title">Edit Notes</string>
+    <string name="dialog_water_title">Water Plant</string>
+    <string name="dialog_water_message">Do you want to water this plant?</string>
+
+    <!-- Toasts -->
+    <string name="toast_watered">%s has been watered!</string>
+    <string name="toast_searching_sensors">Searching for sensors...</string>
+    <string name="toast_fill_all">Please fill in all fields</string>
+    <string name="toast_loading">Error loading data</string>
+    <string name="toast_server_error">Server error: %s</string>
+    <string name="toast_sensor_found">Sensor found!</string>
+    <string name="toast_select_name_species">Please select a name and species!</string>
+    <string name="toast_plant_saved">Plant saved!</string>
+    <string name="toast_error_saving">Error saving plant: %s</string>
+    <string name="toast_plant_deleted">Plant deleted</string>
+    <string name="toast_error_deleting">Failed to delete: %s</string>
+    <string name="toast_image_updated">Image updated!</string>
+    <string name="toast_error_updating_image">Error updating image</string>
+    <string name="toast_error_updating_watered">Error updating watered date</string>
+    <string name="toast_notes_updated">Notes updated!</string>
+    <string name="toast_error_updating_notes">Error updating notes</string>
+
+    <!-- Hints -->
+    <string name="hint_plant_name">Plant name (e.g. Willi)</string>
+    <string name="hint_room_name">Room name (e.g. Balcony)</string>
+    <string name="hint_sensor_mac">MAC Address (optional)</string>
+    <string name="hint_notes">Enter your notes here...</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Plant Sensor Alerts</string>
+    <string name="notification_channel_desc">Notifications for plant sensor warnings</string>
+    <string name="notification_title">Alert: %s</string>
+    <string name="notification_text">%1$s: %2$s</string>
+
+    <!-- Placeholders -->
+    <string name="placeholder_unknown">Unknown</string>
+    <string name="placeholder_never">Never</string>
+    <string name="placeholder_no_hints">No specific care hints available.</string>
+    <string name="placeholder_no_sensor">No sensor selected</string>
+
+    <!-- Templates -->
+    <string name="template_symbolism">Symbolism: %s</string>
+    <string name="template_maintenance">%1$s: %2$s</string>
+
+    <!-- Content Descriptions -->
+    <string name="content_desc_edit_notes">Edit notes</string>
 </resources>

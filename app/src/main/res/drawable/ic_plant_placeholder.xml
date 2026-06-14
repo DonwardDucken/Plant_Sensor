@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Background Circle for a cleaner look -->
+    <path
+        android:fillColor="#F1F8E9"
+        android:pathData="M100,100m-100,0a100,100 0,1 1,200,0a100,100 0,1 1,-200,0" />
+
+    <!-- Pot Base -->
+    <path
+        android:fillColor="#BF360C"
+        android:pathData="M48,135 L152,135 L140,200 L60,200 Z" />
+
+    <!-- Pot Rim -->
+    <path
+        android:fillColor="#D84315"
+        android:pathData="M36,133 L164,133 L164,155 L36,155 Z" />
+
+    <!-- Stem -->
+    <path
+        android:fillColor="#33691E"
+        android:pathData="M97,35 L103,35 L103,133 L97,133 Z" />
+
+    <!-- Leaves -->
+    <!-- Bottom Left Leaf -->
+    <path
+        android:fillColor="#7CB342"
+        android:pathData="M100,115 C100,115 50,120 10,65 C10,65 55,50 100,115" />
+    <path
+        android:strokeColor="#33691E"
+        android:strokeWidth="3"
+        android:pathData="M100,115 C100,115 50,120 10,65 M10,65 C10,65 55,50 100,115" />
+    <path
+        android:strokeColor="#33691E"
+        android:strokeWidth="3"
+        android:pathData="M100,115 L50,85" />
+
+    <!-- Bottom Right Leaf -->
+    <path
+        android:fillColor="#8BC34A"
+        android:pathData="M100,115 C100,115 150,120 190,75 C190,75 145,60 100,115" />
+    <path
+        android:strokeColor="#33691E"
+        android:strokeWidth="3"
+        android:pathData="M100,115 C100,115 150,120 190,75 M190,75 C190,75 145,60 100,115" />
+    <path
+        android:strokeColor="#33691E"
+        android:strokeWidth="3"
+        android:pathData="M100,115 L150,90" />
+
+    <!-- Top Left Leaf -->
+    <path
+        android:fillColor="#8BC34A"
+        android:pathData="M100,75 C100,75 60,65 30,15 C30,15 80,10 100,75" />
+    <path
+        android:strokeColor="#33691E"
+        android:strokeWidth="3"
+        android:pathData="M100,75 C100,75 60,65 30,15 M30,15 C30,15 80,10 100,75" />
+    <path
+        android:strokeColor="#33691E"
+        android:strokeWidth="3"
+        android:pathData="M100,75 L60,40" />
+
+    <!-- Top Right Leaf -->
+    <path
+        android:fillColor="#7CB342"
+        android:pathData="M100,75 C100,75 140,65 170,25 C170,25 120,20 100,75" />
+    <path
+        android:strokeColor="#33691E"
+        android:strokeWidth="3"
+        android:pathData="M100,75 C100,75 140,65 170,25 M170,25 C170,25 120,20 100,75" />
+    <path
+        android:strokeColor="#33691E"
+        android:strokeWidth="3"
+        android:pathData="M100,75 L140,45" />
+
+</vector>

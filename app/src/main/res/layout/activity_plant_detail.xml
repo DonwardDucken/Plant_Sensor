@@ -1,113 +1,290 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7F4"
-    android:padding="16dp">
+    android:background="@color/background_light">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="280dp"
+        android:background="@color/primary"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:contentScrim="@color/primary"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:titleEnabled="false">
+
+            <ImageView
+                android:id="@+id/imagePlantHeader"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_plant_placeholder"
+                app:layout_collapseMode="parallax" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/gradient_overlay" />
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:navigationIcon="@android:drawable/ic_menu_revert" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/buttonEditImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="16dp"
+                android:src="@android:drawable/ic_menu_camera"
+                app:fabSize="mini"
+                app:backgroundTint="@color/surface"
+                app:tint="@color/primary"
+                app:layout_collapseMode="parallax" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:id="@+id/textPlantName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/surface"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textPlantRoom"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bottom_sheet_bg"
+        android:elevation="4dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/room_card_bg"
             android:padding="20dp">
 
-            <TextView
-                android:id="@+id/textPlantName"
+            <!-- MAIN FOCUS: LAST WATERED -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardLastWatered"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Monstera"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:textColor="#1E2A1F"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:backgroundTint="@color/primary_light"
+                app:strokeWidth="0dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="20dp"
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@android:drawable/ic_menu_send"
+                        app:tint="@color/primary" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Last Watered"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp"
+                            android:textAllCaps="true" />
+                        <TextView
+                            android:id="@+id/textLastWatered"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_main"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <Button
+                        android:id="@+id/buttonWaterNow"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Water" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:id="@+id/textPlantRoom"
+            <!-- Tab Switcher -->
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/toggleGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="24dp"
+                app:checkedButton="@+id/btnData"
+                app:singleSelection="true">
+                <Button android:id="@+id/btnData" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Status" />
+                <Button android:id="@+id/btnInfo" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Info" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <!-- TAB 1: SENSOR DATA -->
+            <LinearLayout
+                android:id="@+id/layoutData"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Raum: Wohnzimmer"
-                android:textSize="16sp"
-                android:textColor="#6E7B6F"
-                android:layout_marginBottom="20dp" />
+                android:orientation="vertical"
+                android:visibility="visible">
 
-            <TextView
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp">
+                        <com.example.plant_sensor.SensorRangeView android:id="@+id/rangeTemperature" android:layout_width="match_parent" android:layout_height="wrap_content" />
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginHorizontal="16dp" />
+                        <com.example.plant_sensor.SensorRangeView android:id="@+id/rangeSoilMoisture" android:layout_width="match_parent" android:layout_height="wrap_content" />
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginHorizontal="16dp" />
+                        <com.example.plant_sensor.SensorRangeView android:id="@+id/rangeLight" android:layout_width="match_parent" android:layout_height="wrap_content" />
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginHorizontal="16dp" />
+                        <com.example.plant_sensor.SensorRangeView android:id="@+id/rangeConductivity" android:layout_width="match_parent" android:layout_height="wrap_content" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- HISTORY CHART (DYNAMIC) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                        <TextView
+                            android:id="@+id/textHistoryLabel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Historical Trends"
+                            android:textColor="@color/primary"
+                            android:textStyle="bold"
+                            android:textSize="12sp"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.1"
+                            android:layout_marginBottom="12dp" />
+                        <com.example.plant_sensor.HistoryChartView
+                            android:id="@+id/chartHistory"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- TAB 2: ENCYCLOPEDIA INFO -->
+            <LinearLayout
+                android:id="@+id/layoutInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Status"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:textColor="#223322"
-                android:layout_marginBottom="12dp" />
+                android:orientation="vertical"
+                android:visibility="gone">
 
-            <TextView
-                android:id="@+id/textTemperature"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Temperatur: 22°C"
-                android:textSize="16sp"
-                android:textColor="#223322"
-                android:layout_marginBottom="8dp" />
+                <!-- Section: Shortened Botany -->
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Botanical Details" android:textColor="@color/primary" android:textStyle="bold" android:textSize="12sp" android:textAllCaps="true" android:letterSpacing="0.1" android:layout_marginBottom="12dp" />
+                <GridLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:columnCount="2" android:alignmentMode="alignMargins">
+                    <include layout="@layout/item_fact_card" android:id="@+id/cardSpecies" />
+                    <include layout="@layout/item_fact_card" android:id="@+id/cardCategory" />
+                    <include layout="@layout/item_fact_card" android:id="@+id/cardOrigin" />
+                </GridLayout>
 
-            <TextView
-                android:id="@+id/textMoisture"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Feuchtigkeit: 45%"
-                android:textSize="16sp"
-                android:textColor="#223322"
-                android:layout_marginBottom="8dp" />
+                <!-- Section: Care Guide -->
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Care Guide" android:textColor="@color/primary" android:textStyle="bold" android:textSize="12sp" android:textAllCaps="true" android:letterSpacing="0.1" android:layout_marginTop="24dp" android:layout_marginBottom="12dp" />
+                <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" app:cardCornerRadius="24dp" app:cardElevation="2dp" app:strokeWidth="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                        <TextView android:id="@+id/textInfoSunlight" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_main" android:textSize="14sp" android:drawablePadding="16dp" android:gravity="center_vertical" app:drawableStartCompat="@android:drawable/ic_menu_day" />
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginVertical="12dp" />
+                        <TextView android:id="@+id/textInfoWatering" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_main" android:textSize="14sp" android:drawablePadding="16dp" android:gravity="center_vertical" app:drawableStartCompat="@android:drawable/ic_menu_send" />
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginVertical="12dp" />
+                        <TextView android:id="@+id/textInfoFertilizer" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_main" android:textSize="14sp" android:drawablePadding="16dp" android:gravity="center_vertical" app:drawableStartCompat="@android:drawable/ic_menu_view" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:id="@+id/textLastWatered"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Zuletzt gegossen: 02.04.2026"
-                android:textSize="16sp"
-                android:textColor="#223322"
-                android:layout_marginBottom="16dp" />
+                <!-- Section: Meaning & Origin -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="12dp">
 
-            <Button
-                android:id="@+id/buttonWaterNow"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Jetzt gießen"
-                android:textAllCaps="false"
-                android:layout_marginBottom="24dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="About"
+                        android:textColor="@color/primary"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.1"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentStart="true" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Pflegehinweise"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:textColor="#223322"
-                android:layout_marginBottom="12dp" />
+                    <ImageButton
+                        android:id="@+id/buttonEditCareHints"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_alignParentEnd="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@android:drawable/ic_menu_edit"
+                        app:tint="@color/primary"
+                        android:contentDescription="Edit notes" />
+                </RelativeLayout>
 
-            <TextView
-                android:id="@+id/textCareHints"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Hell stellen, aber keine direkte Mittagssonne."
-                android:textSize="16sp"
-                android:textColor="#223322"
-                android:background="@drawable/plant_item_bg"
-                android:padding="16dp"
-                android:lineSpacingExtra="4dp" />
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAbout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+                        <TextView android:id="@+id/textCareHints" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_secondary" android:textSize="14sp" android:lineSpacingExtra="5dp" />
+                        <View android:id="@+id/dividerFloral" android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginVertical="16dp" android:visibility="gone" />
+                        <TextView android:id="@+id/textFloralLanguage" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/primary" android:textStyle="italic" android:textSize="14sp" android:visibility="gone" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Nach links wischen zum Schließen"
-                android:textSize="14sp"
-                android:textColor="#7A857B"
-                android:layout_marginTop="20dp" />
-
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-</ScrollView>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
