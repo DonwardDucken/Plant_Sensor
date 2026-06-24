@@ -13,11 +13,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.graphics.toColorInt
+import androidx.core.net.toUri
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.google.android.material.textfield.TextInputEditText
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -50,8 +51,8 @@ class PlantDetailActivity : AppCompatActivity() {
     private val rooms = mutableListOf("Living Room", "Kitchen", "Balcony")
     private var plantRef: PlantReference? = null
 
-    private val SERVER_URL = "http://192.168.0.16:8080"
-    private val gson = GsonBuilder().setLenient().create()
+    private val serverUrl = "http://192.168.0.16:8080"
+    private val gson = GsonBuilder().create()
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
@@ -115,7 +116,7 @@ class PlantDetailActivity : AppCompatActivity() {
         if (plantId == -1L) return
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val jsonResponse = fetchUrl("$SERVER_URL/plants")
+                val jsonResponse = fetchUrl("$serverUrl/plants")
                 val type = object : TypeToken<List<Plant>>() {}.type
                 val loadedPlants: List<Plant> = gson.fromJson(jsonResponse, type) ?: emptyList()
                 val currentPlant = loadedPlants.find { it.id == plantId }
@@ -224,7 +225,7 @@ class PlantDetailActivity : AppCompatActivity() {
     private fun loadRoomsFromServer() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val jsonResponse = fetchUrl("$SERVER_URL/plants")
+                val jsonResponse = fetchUrl("$serverUrl/plants")
                 val type = object : TypeToken<List<Plant>>() {}.type
                 val loadedPlants: List<Plant> = gson.fromJson(jsonResponse, type) ?: emptyList()
 
@@ -266,7 +267,7 @@ class PlantDetailActivity : AppCompatActivity() {
                     put("plant_name", newName)
                     put("room", newRoom)
                 }
-                postUrl("$SERVER_URL/update_plant", json)
+                postUrl("$serverUrl/update_plant", json)
                 withContext(Dispatchers.Main) {
                     currentName = newName
                     currentRoom = newRoom
@@ -298,7 +299,7 @@ class PlantDetailActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val json = JSONObject().apply { put("id", plantId) }
-                postUrl("$SERVER_URL/delete_plant", json)
+                postUrl("$serverUrl/delete_plant", json)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@PlantDetailActivity, getString(R.string.toast_plant_deleted), Toast.LENGTH_SHORT).show()
                     finish()
@@ -341,7 +342,7 @@ class PlantDetailActivity : AppCompatActivity() {
         }
 
         if (!imageUriString.isNullOrEmpty()) {
-            imageHeader.load(Uri.parse(imageUriString)) {
+            imageHeader.load(imageUriString.toUri()) {
                 crossfade(true)
                 placeholder(R.drawable.ic_plant_placeholder)
                 error(R.drawable.ic_plant_placeholder)
@@ -427,11 +428,12 @@ class PlantDetailActivity : AppCompatActivity() {
                     put("id", plantId)
                     put("care_hints", hints)
                 }
-                postUrl("$SERVER_URL/update_plant", json)
+                postUrl("$serverUrl/update_plant", json)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@PlantDetailActivity, getString(R.string.toast_notes_updated), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
+                Log.e("PlantSensor", "Error updating care hints", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@PlantDetailActivity, getString(R.string.toast_error_updating_notes), Toast.LENGTH_SHORT).show()
                 }
@@ -446,8 +448,9 @@ class PlantDetailActivity : AppCompatActivity() {
                     put("id", plantId)
                     put("last_watered", date)
                 }
-                postUrl("$SERVER_URL/update_plant", json)
+                postUrl("$serverUrl/update_plant", json)
             } catch (e: Exception) {
+                Log.e("PlantSensor", "Error updating last watered", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@PlantDetailActivity, getString(R.string.toast_error_updating_watered), Toast.LENGTH_SHORT).show()
                 }
@@ -462,13 +465,14 @@ class PlantDetailActivity : AppCompatActivity() {
                     put("id", plantId)
                     put("image_uri", uri)
                 }
-                postUrl("$SERVER_URL/update_plant", json)
+                postUrl("$serverUrl/update_plant", json)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@PlantDetailActivity, getString(R.string.toast_image_updated), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
+                Log.e("PlantSensor", "Error updating plant image", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@PlantDetailActivity, getString(R.string.toast_error_updating_image), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PlantDetailActivity, getString(R.string.toast_error_updating_image), Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -484,9 +488,9 @@ class PlantDetailActivity : AppCompatActivity() {
     private fun refreshData(mac: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val latestJson = fetchUrl("$SERVER_URL/sensor?mac=$mac")
+                val latestJson = fetchUrl("$serverUrl/sensor?mac=$mac")
                 val latest = JSONObject(latestJson)
-                val historyJson = fetchUrl("$SERVER_URL/history?mac=$mac")
+                val historyJson = fetchUrl("$serverUrl/history?mac=$mac")
                 val type = object : TypeToken<List<HistoryRawPoint>>() {}.type
                 val rawPoints: List<HistoryRawPoint> = gson.fromJson(historyJson, type) ?: emptyList()
                 val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -525,10 +529,10 @@ class PlantDetailActivity : AppCompatActivity() {
         val data = historyData ?: return
         cardHistory.visibility = View.VISIBLE
         when (type) {
-            "Moisture" -> { textHistoryLabel.text = getString(R.string.label_history_moisture); chart.setData(data.moisture, getString(R.string.label_history_moisture) + " " + getString(R.string.unit_moisture), Color.parseColor("#2196F3")) }
-            "Temperature" -> { textHistoryLabel.text = getString(R.string.label_history_temp); chart.setData(data.temp, getString(R.string.label_history_temp) + " " + getString(R.string.unit_temp), Color.parseColor("#FF5722")) }
-            "Light" -> { textHistoryLabel.text = getString(R.string.label_history_light); chart.setData(data.light, getString(R.string.label_history_light) + " " + getString(R.string.unit_light), Color.parseColor("#FFC107")) }
-            "Conductivity" -> { textHistoryLabel.text = getString(R.string.label_history_conductivity); chart.setData(data.conductivity, getString(R.string.label_history_conductivity) + " " + getString(R.string.unit_conductivity), Color.parseColor("#9C27B0")) }
+            "Moisture" -> { textHistoryLabel.text = getString(R.string.label_history_moisture); chart.setData(data.moisture, getString(R.string.label_history_moisture) + " " + getString(R.string.unit_moisture), "#2196F3".toColorInt()) }
+            "Temperature" -> { textHistoryLabel.text = getString(R.string.label_history_temp); chart.setData(data.temp, getString(R.string.label_history_temp) + " " + getString(R.string.unit_temp), "#FF5722".toColorInt()) }
+            "Light" -> { textHistoryLabel.text = getString(R.string.label_history_light); chart.setData(data.light, getString(R.string.label_history_light) + " " + getString(R.string.unit_light), "#FFC107".toColorInt()) }
+            "Conductivity" -> { textHistoryLabel.text = getString(R.string.label_history_conductivity); chart.setData(data.conductivity, getString(R.string.label_history_conductivity) + " " + getString(R.string.unit_conductivity), "#9C27B0".toColorInt()) }
         }
         findViewById<NestedScrollView>(R.id.nestedScrollView).post { findViewById<NestedScrollView>(R.id.nestedScrollView).smoothScrollTo(0, cardHistory.top) }
     }
