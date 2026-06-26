@@ -1,4 +1,4 @@
-package com.example.plant_sensor
+package com.example.plant_sensor.data.model
 
 import com.google.gson.annotations.SerializedName
 

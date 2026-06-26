@@ -91,7 +91,6 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- MAIN FOCUS: LAST WATERED -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardLastWatered"
                 android:layout_width="match_parent"
@@ -142,7 +141,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Tab Switcher -->
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/toggleGroup"
                 android:layout_width="wrap_content"
@@ -155,7 +153,6 @@
                 <Button android:id="@+id/btnInfo" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Info" />
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
-            <!-- TAB 1: SENSOR DATA -->
             <LinearLayout
                 android:id="@+id/layoutData"
                 android:layout_width="match_parent"
@@ -170,17 +167,16 @@
                     app:cardElevation="2dp"
                     app:strokeWidth="0dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp">
-                        <com.example.plant_sensor.SensorRangeView android:id="@+id/rangeTemperature" android:layout_width="match_parent" android:layout_height="wrap_content" />
+                        <com.example.plant_sensor.ui.customviews.SensorRangeView android:id="@+id/rangeTemperature" android:layout_width="match_parent" android:layout_height="wrap_content" />
                         <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginHorizontal="16dp" />
-                        <com.example.plant_sensor.SensorRangeView android:id="@+id/rangeSoilMoisture" android:layout_width="match_parent" android:layout_height="wrap_content" />
+                        <com.example.plant_sensor.ui.customviews.SensorRangeView android:id="@+id/rangeSoilMoisture" android:layout_width="match_parent" android:layout_height="wrap_content" />
                         <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginHorizontal="16dp" />
-                        <com.example.plant_sensor.SensorRangeView android:id="@+id/rangeLight" android:layout_width="match_parent" android:layout_height="wrap_content" />
+                        <com.example.plant_sensor.ui.customviews.SensorRangeView android:id="@+id/rangeLight" android:layout_width="match_parent" android:layout_height="wrap_content" />
                         <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginHorizontal="16dp" />
-                        <com.example.plant_sensor.SensorRangeView android:id="@+id/rangeConductivity" android:layout_width="match_parent" android:layout_height="wrap_content" />
+                        <com.example.plant_sensor.ui.customviews.SensorRangeView android:id="@+id/rangeConductivity" android:layout_width="match_parent" android:layout_height="wrap_content" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- HISTORY CHART (DYNAMIC) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardHistory"
                     android:layout_width="match_parent"
@@ -202,7 +198,7 @@
                             android:textAllCaps="true"
                             android:letterSpacing="0.1"
                             android:layout_marginBottom="12dp" />
-                        <com.example.plant_sensor.HistoryChartView
+                        <com.example.plant_sensor.ui.customviews.HistoryChartView
                             android:id="@+id/chartHistory"
                             android:layout_width="match_parent"
                             android:layout_height="200dp" />
@@ -211,7 +207,6 @@
 
             </LinearLayout>
 
-            <!-- TAB 2: ENCYCLOPEDIA INFO -->
             <LinearLayout
                 android:id="@+id/layoutInfo"
                 android:layout_width="match_parent"
@@ -219,15 +214,14 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- Section: Shortened Botany -->
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Botanical Details" android:textColor="@color/primary" android:textStyle="bold" android:textSize="12sp" android:textAllCaps="true" android:letterSpacing="0.1" android:layout_marginBottom="12dp" />
                 <GridLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:columnCount="2" android:alignmentMode="alignMargins">
                     <include layout="@layout/item_fact_card" android:id="@+id/cardSpecies" />
                     <include layout="@layout/item_fact_card" android:id="@+id/cardCategory" />
                     <include layout="@layout/item_fact_card" android:id="@+id/cardOrigin" />
+                    <include layout="@layout/item_fact_card" android:id="@+id/cardColor" />
                 </GridLayout>
 
-                <!-- Section: Care Guide -->
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Care Guide" android:textColor="@color/primary" android:textStyle="bold" android:textSize="12sp" android:textAllCaps="true" android:letterSpacing="0.1" android:layout_marginTop="24dp" android:layout_marginBottom="12dp" />
                 <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" app:cardCornerRadius="24dp" app:cardElevation="2dp" app:strokeWidth="0dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
@@ -239,7 +233,6 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Section: Meaning & Origin -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -278,8 +271,6 @@
                     app:strokeWidth="0dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
                         <TextView android:id="@+id/textCareHints" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/text_secondary" android:textSize="14sp" android:lineSpacingExtra="5dp" />
-                        <View android:id="@+id/dividerFloral" android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginVertical="16dp" android:visibility="gone" />
-                        <TextView android:id="@+id/textFloralLanguage" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/primary" android:textStyle="italic" android:textSize="14sp" android:visibility="gone" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

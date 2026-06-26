@@ -19,6 +19,7 @@
     <string name="label_species">Species</string>
     <string name="label_category">Category</string>
     <string name="label_origin">Origin</string>
+    <string name="label_color">Color</string>
     <string name="label_sunlight">Light</string>
     <string name="label_watering">Water</string>
     <string name="label_fertilizer">Fertilizer</string>
@@ -27,12 +28,12 @@
     <string name="label_plant_type">Plant Type</string>
     <string name="label_sensor_connect">Connect Sensor</string>
     <string name="label_encyclopedia_entry">Encyclopedia Entry</string>
-    <string name="label_history_moisture">History: Soil Moisture</string>
-    <string name="label_history_temp">History: Temperature</string>
-    <string name="label_history_light">History: Light</string>
-    <string name="label_history_conductivity">History: Conductivity</string>
+    <string name="label_history_moisture">Soil Moisture</string>
+    <string name="label_history_temp">Temperature</string>
+    <string name="label_history_light">Light</string>
+    <string name="label_history_conductivity">Conductivity</string>
     <string name="unit_temp">°C</string>
-    <string name="unit_moisture">%%</string>
+    <string name="unit_moisture">%</string>
     <string name="unit_light"> Lux</string>
     <string name="unit_conductivity"> µS/cm</string>
 
@@ -73,7 +74,7 @@
     <string name="toast_error_updating_notes">Error updating notes</string>
 
     <!-- Hints -->
-    <string name="hint_plant_name">Plant name (e.g. Willi)</string>
+    <string name="hint_plant_name">Plant name (e.g. My plant)</string>
     <string name="hint_room_name">Room name (e.g. Balcony)</string>
     <string name="hint_sensor_mac">MAC Address (optional)</string>
     <string name="hint_notes">Enter your notes here...</string>

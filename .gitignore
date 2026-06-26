@@ -1,7 +1,7 @@
 # Gradle
 .gradle/
 build/
-app/build/
+**/build/
 
 # Local configuration
 local.properties
@@ -10,23 +10,28 @@ local.properties
 .idea/
 *.iml
 
-# Gemini / Studio Bot
+# User-specific IDE settings
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetSelector.xml
 .idea/studiobot.xml
+
+# Generated native files
+.externalNativeBuild/
+.cxx/
 
 # Captures
 captures/
 
-# Generated files
-.externalNativeBuild/
-.cxx/
+# Log files
+*.log
 
 # Keystore
 *.jks
 *.keystore
 
-# Logs
-*.log
-
-# OS Files
+# OS files
 .DS_Store
 Thumbs.db

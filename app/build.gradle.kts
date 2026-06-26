@@ -16,14 +16,21 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    buildFeatures {
+        buildConfig = true
+    }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "SERVER_URL", "\"http://192.168.0.16:8080\"")
+        }
         release {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "SERVER_URL", "\"http://10.0.2.2:8080\"")
         }
     }
     compileOptions {
@@ -43,10 +50,10 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    
+
     // Coroutines for better performance in the background
     implementation(libs.kotlinx.coroutines.android)
-    
+
     implementation(libs.gson)
     implementation(libs.coil)
 
