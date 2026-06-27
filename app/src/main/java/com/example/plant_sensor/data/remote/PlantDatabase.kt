@@ -20,8 +20,8 @@ object PlantDatabase {
 
     private const val LOG_TAG = "PlantDatabase"
     private const val SERVER_URL =BuildConfig.SERVER_URL
-    private const val CONNECTION_TIMEOUT_MS = 15000
-    private const val READ_TIMEOUT_MS = 30000
+    private const val CONNECTION_TIMEOUT_MS = 500
+    private const val READ_TIMEOUT_MS = 1000
     private const val CHARSET_UTF_8 = "UTF-8"
     private val HTTP_SUCCESS_RANGE = 200..299
     private val gson = GsonBuilder().create()
