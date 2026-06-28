@@ -25,7 +25,7 @@
     <string name="label_fertilizer">Fertilizer</string>
     <string name="label_last_watered">Last Watered</string>
     <string name="label_room_select">Select Room</string>
-    <string name="label_plant_type">Plant Type</string>
+    <string name="label_plant_type">Plant Species</string>
     <string name="label_sensor_connect">Connect Sensor</string>
     <string name="label_encyclopedia_entry">Encyclopedia Entry</string>
     <string name="label_history_moisture">Soil Moisture</string>

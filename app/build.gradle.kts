@@ -22,7 +22,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "SERVER_URL", "\"http://192.168.137.1:8080\"")
+            buildConfigField("String", "SERVER_URL", "\"http://192.168.0.16:8080\"")
         }
         release {
             isMinifyEnabled = true
@@ -30,7 +30,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "SERVER_URL", "\"http://192.168.137.1:8080\"")
+            buildConfigField("String", "SERVER_URL", "\"http://192.168.0.16:8080\"")
         }
     }
     compileOptions {

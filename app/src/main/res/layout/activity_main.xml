@@ -46,16 +46,15 @@
             </LinearLayout>
 
             <ImageButton
-                android:id="@+id/buttonSearch"
+                android:id="@+id/buttonSettings"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_search"
+                android:src="@android:drawable/ic_menu_preferences"
                 app:tint="@color/primary"
-                android:visibility="gone"
-                android:contentDescription="Search" />
+                android:contentDescription="Settings" />
         </RelativeLayout>
     </com.google.android.material.appbar.AppBarLayout>
 

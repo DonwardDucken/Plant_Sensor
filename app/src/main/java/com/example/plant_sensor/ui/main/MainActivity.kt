@@ -14,6 +14,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -21,17 +24,21 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.plant_sensor.R
 import com.example.plant_sensor.data.model.Plant
 import com.example.plant_sensor.data.model.PlantReference
 import com.example.plant_sensor.data.remote.PlantDatabase
 import com.example.plant_sensor.ui.detail.PlantDetailActivity
 import com.example.plant_sensor.ui.encyclopedia.EncyclopediaActivity
+import com.example.plant_sensor.ui.settings.SettingsActivity
+import com.example.plant_sensor.util.SettingsManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.GsonBuilder
@@ -48,17 +55,19 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.example.plant_sensor.BuildConfig
+import com.example.plant_sensor.R.layout.dialog_add_plant
 
 /**
  * Main screen of the plant sensor app.
  */
 class MainActivity : AppCompatActivity() {
 
-    private val rooms = mutableListOf("Living Room", "Kitchen", "Balcony")
+    private val rooms = mutableListOf<String>()
     private val myPlants = mutableListOf<Plant>()
-    private val expandedRooms = mutableSetOf("Living Room", "Kitchen", "Balcony")
+    private val expandedRooms = mutableSetOf<String>()
 
     private val gson = GsonBuilder().setLenient().create()
+    private lateinit var settingsManager: SettingsManager
 
     private lateinit var mainAdapter: MainAdapter
     private lateinit var recyclerView: RecyclerView
@@ -70,16 +79,20 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        settingsManager = SettingsManager(this)
         bindViews()
-        setupPlantDatabase()
         setupRecyclerView()
         setupAddPlantButton()
         setupBottomNavigation()
+        setupSettingsButton()
     }
 
     override fun onResume() {
         super.onResume()
-        loadPlantsFromServer()
+        PlantDatabase.invalidate()
+        PlantDatabase.loadIfNeeded(this) {
+            loadPlantsFromServer()
+        }
     }
 
     private fun bindViews() {
@@ -89,9 +102,9 @@ class MainActivity : AppCompatActivity() {
         titleView = findViewById(R.id.textMainTitle)
     }
 
-    private fun setupPlantDatabase() {
-        PlantDatabase.loadIfNeeded {
-            Log.d(LOG_TAG, "Plant database pre-loaded")
+    private fun setupSettingsButton() {
+        findViewById<ImageButton>(R.id.buttonSettings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
     }
 
@@ -102,11 +115,6 @@ class MainActivity : AppCompatActivity() {
                     is MainItem.Header -> toggleRoom(item.name)
                     is MainItem.PlantRow -> openPlantDetail(item.plant)
                 }
-            },
-            onLongClick = { item ->
-                if (item is MainItem.PlantRow) {
-                    showDeleteConfirmation(item.plant)
-                }
             }
         )
 
@@ -116,7 +124,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupAddPlantButton() {
         addPlantButton.setOnClickListener {
-            PlantDatabase.loadIfNeeded {
+            PlantDatabase.loadIfNeeded(this) {
                 showAddPlantDialog()
             }
         }
@@ -138,10 +146,13 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation.selectedItemId = R.id.nav_my_plants
     }
 
+    /**
+     * Loads all plants from the backend and updates the user interface.
+     */
     private fun loadPlantsFromServer() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val jsonResponse = fetchUrl("$SERVER_URL/plants")
+                val jsonResponse = fetchUrl("${settingsManager.getServerUrl()}/plants")
                 val type = object : TypeToken<List<Plant>>() {}.type
                 val loadedPlants: List<Plant> = gson.fromJson(jsonResponse, type) ?: emptyList()
 
@@ -152,7 +163,12 @@ class MainActivity : AppCompatActivity() {
                     updateUI()
                 }
             } catch (exception: Exception) {
-                Log.e(LOG_TAG, "Error loading plants", exception)
+                Log.e("MainActivity", "Error loading plants", exception)
+                withContext(Dispatchers.Main) {
+                    myPlants.clear()
+                    updateUI()
+                    Toast.makeText(this@MainActivity, "Server not reachable", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -185,19 +201,25 @@ class MainActivity : AppCompatActivity() {
         mainAdapter.submitList(items)
     }
 
+    /**
+     * Opens the dialog for creating a new plant.
+     */
     private fun showAddPlantDialog() {
-        val view = LayoutInflater.from(this).inflate(R.layout.dialog_add_plant, null)
+        val view = LayoutInflater.from(this).inflate(dialog_add_plant, null)
         val editName = view.findViewById<TextInputEditText>(R.id.editPlantName)
         val editMac = view.findViewById<TextInputEditText>(R.id.editSensorMac)
         val spinnerRoom = view.findViewById<Spinner>(R.id.spinnerRoom)
-        val spinnerSpecies = view.findViewById<Spinner>(R.id.spinnerSpecies)
+        val editSpecies = view.findViewById<AutoCompleteTextView>(R.id.editSpecies)
         val addRoomButton = view.findViewById<View>(R.id.buttonAddRoom)
         val scanButton = view.findViewById<View>(R.id.buttonScanSensor)
 
         val roomAdapter = createRoomAdapter()
         spinnerRoom.adapter = roomAdapter
         val speciesAdapter = createSpeciesAdapter()
-        spinnerSpecies.adapter = speciesAdapter
+        editSpecies.setAdapter(speciesAdapter)
+        
+        // Show all options when the field is clicked
+        editSpecies.setOnClickListener { editSpecies.showDropDown() }
 
         addRoomButton.setOnClickListener {
             showAddRoomDialog { newRoom ->
@@ -219,7 +241,7 @@ class MainActivity : AppCompatActivity() {
                 val plantJson = createPlantJson(
                     name = editName.text.toString().trim(),
                     room = spinnerRoom.selectedItem?.toString() ?: "",
-                    speciesName = spinnerSpecies.selectedItem?.toString() ?: "",
+                    speciesName = editSpecies.text.toString().trim(),
                     sensorMac = editMac.text.toString().trim()
                 )
                 if (plantJson != null) savePlantToServer(plantJson)
@@ -237,9 +259,7 @@ class MainActivity : AppCompatActivity() {
     private fun createSpeciesAdapter(): ArrayAdapter<String> {
         val speciesList = PlantDatabase.plantReferences.mapNotNull { it.displayPid }
             .ifEmpty { listOf("abelia dielsii", "abelia chinensis") }
-        return ArrayAdapter(this, android.R.layout.simple_spinner_item, speciesList).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
+        return ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, speciesList)
     }
 
     private fun createPlantJson(name: String, room: String, speciesName: String, sensorMac: String): JSONObject? {
@@ -249,21 +269,25 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, getString(R.string.toast_select_name_species), Toast.LENGTH_SHORT).show()
             return null
         }
-        val date = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(Date())
+
         return JSONObject().apply {
             put("plant_name", name)
             put("room", room)
             put("species_id", speciesId)
             put("MAC", if (sensorMac.isNotEmpty()) sensorMac else JSONObject.NULL)
-            put("last_watered", date)
+            put("last_watered", JSONObject.NULL)
             put("image_uri", JSONObject.NULL)
         }
     }
 
+    /**
+     * Sends a new plant to the backend.
+     */
     private fun savePlantToServer(json: JSONObject) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                postUrl("$SERVER_URL/add_plant", json)
+                Log.d("MainActivity", json.toString(2))
+                postUrl("${settingsManager.getServerUrl()}/add_plant", json)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity, getString(R.string.toast_plant_saved), Toast.LENGTH_SHORT).show()
                     loadPlantsFromServer()
@@ -290,7 +314,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val json = JSONObject().apply { put("id", plantId) }
-                postUrl("$SERVER_URL/delete_plant", json)
+                postUrl("${settingsManager.getServerUrl()}/delete_plant", json)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity, getString(R.string.toast_plant_deleted), Toast.LENGTH_SHORT).show()
                     loadPlantsFromServer()
@@ -344,25 +368,25 @@ class MainActivity : AppCompatActivity() {
         }
         val bluetoothAdapter = getBluetoothAdapter()
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
-            Toast.makeText(this, "Bluetooth ist nicht aktiviert", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Bluetooth is not activated", Toast.LENGTH_SHORT).show()
             return
         }
         val scanner = bluetoothAdapter.bluetoothLeScanner
         if (scanner == null) {
-            Toast.makeText(this, "Bluetooth Scanner nicht verfügbar", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Bluetooth Scanner not available", Toast.LENGTH_SHORT).show()
             return
         }
         val discoveredDevices = mutableSetOf<String>()
         val deviceLabels = mutableListOf<String>()
         val listAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, deviceLabels)
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Sensoren suchen...")
+            .setTitle("Searching for sensors...")
             .setAdapter(listAdapter) { _, which ->
                 val selected = deviceLabels[which]
                 val mac = selected.substringAfterLast("\n")
                 onFound(mac)
             }
-            .setNegativeButton("Abbrechen", null)
+            .setNegativeButton("Cancel", null)
             .create()
         val callback = createScanCallback(discoveredDevices, deviceLabels, listAdapter)
         dialog.setOnDismissListener { stopBluetoothScan(scanner, callback) }
@@ -379,7 +403,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestBluetoothPermissions() {
         ActivityCompat.requestPermissions(this, getRequiredBluetoothPermissions(), REQUEST_BLUETOOTH_PERMISSIONS)
-        Toast.makeText(this, "Bitte Bluetooth-Berechtigung erlauben", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Please allow Bluetooth permissions", Toast.LENGTH_SHORT).show()
     }
 
     private fun getRequiredBluetoothPermissions(): Array<String> {
@@ -400,7 +424,7 @@ class MainActivity : AppCompatActivity() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
                 val device = result.device
                 val mac = device.address
-                val name = device.name ?: result.scanRecord?.deviceName ?: "Unbekannter Sensor"
+                val name = device.name ?: result.scanRecord?.deviceName ?: "Unknown sensor"
                 if (discoveredDevices.add(mac)) {
                     runOnUiThread {
                         deviceLabels.add("$name\n$mac")
@@ -416,14 +440,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopBluetoothScan(scanner: android.bluetooth.le.BluetoothLeScanner, callback: ScanCallback) {
-        try { scanner.stopScan(callback) } catch (exception: Exception) { Log.e(LOG_TAG, "Error stopping scan", exception) }
+        try { scanner.stopScan(callback) } catch (exception: Exception) { Log.e("MainActivity", "Error stopping scan", exception) }
     }
 
     private fun stopScanAfterTimeout(scanner: android.bluetooth.le.BluetoothLeScanner, callback: ScanCallback, dialog: AlertDialog, discoveredDevices: Set<String>) {
         lifecycleScope.launch {
             delay(SCAN_DURATION_MS)
             stopBluetoothScan(scanner, callback)
-            if (discoveredDevices.isEmpty() && dialog.isShowing) dialog.setTitle("Keine Sensoren gefunden")
+            if (discoveredDevices.isEmpty() && dialog.isShowing) dialog.setTitle("No sensors found")
         }
     }
 
@@ -442,14 +466,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun postUrl(urlString: String, json: JSONObject) {
         val connection = openConnection(urlString)
+
         connection.requestMethod = "POST"
-        connection.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+        connection.setRequestProperty("Content-Type", "application/json")
         connection.doOutput = true
+
         try {
-            OutputStreamWriter(connection.outputStream, "UTF-8").use { writer ->
-                writer.write(json.toString())
-                writer.flush()
+            OutputStreamWriter(connection.outputStream).use {
+                it.write(json.toString())
             }
+
+            val responseCode = connection.responseCode
+            Log.d("MainActivity", "POST Response: $responseCode")
+
+            if (responseCode !in HTTP_SUCCESS_RANGE) {
+                val error = connection.errorStream?.bufferedReader()?.readText()
+                throw Exception("HTTP $responseCode\n$error")
+            }
+
         } finally {
             connection.disconnect()
         }
@@ -468,7 +502,7 @@ class MainActivity : AppCompatActivity() {
         data class PlantRow(val plant: Plant, val ref: PlantReference?) : MainItem()
     }
 
-    class MainAdapter(private val onClick: (MainItem) -> Unit, private val onLongClick: (MainItem) -> Unit) : ListAdapter<MainItem, RecyclerView.ViewHolder>(DiffCallback) {
+    class MainAdapter(private val onClick: (MainItem) -> Unit) : ListAdapter<MainItem, RecyclerView.ViewHolder>(DiffCallback) {
         override fun getItemViewType(position: Int): Int = if (getItem(position) is MainItem.Header) VIEW_TYPE_HEADER else VIEW_TYPE_PLANT
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
             val inflater = LayoutInflater.from(parent.context)
@@ -478,12 +512,27 @@ class MainActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             val item = getItem(position)
             holder.itemView.setOnClickListener { onClick(item) }
-            holder.itemView.setOnLongClickListener { onLongClick(item); true }
             when {
                 holder is HeaderViewHolder && item is MainItem.Header -> holder.title.text = "${if (item.isExpanded) "▼" else "▶"} ${item.name}"
                 holder is PlantViewHolder && item is MainItem.PlantRow -> {
                     holder.title.text = item.plant.name
                     holder.subtitle.text = item.ref?.displayPid ?: item.plant.speciesId
+                    
+                    val imageUri = item.plant.imageUri
+                    if (!imageUri.isNullOrEmpty()) {
+                        holder.image.load(imageUri.toUri()) {
+                            crossfade(true)
+                            placeholder(R.drawable.ic_plant_placeholder)
+                            error(R.drawable.ic_plant_placeholder)
+                        }
+                    } else {
+                        val refImage = item.ref?.image?.replace("%d", "200")
+                        holder.image.load(refImage) {
+                            crossfade(true)
+                            placeholder(R.drawable.ic_plant_placeholder)
+                            error(R.drawable.ic_plant_placeholder)
+                        }
+                    }
                 }
             }
         }
@@ -491,6 +540,7 @@ class MainActivity : AppCompatActivity() {
         class PlantViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val title: TextView = view.findViewById(R.id.textPlantName)
             val subtitle: TextView = view.findViewById(R.id.textPlantCategory)
+            val image: ImageView = view.findViewById(R.id.imagePlant)
         }
         object DiffCallback : DiffUtil.ItemCallback<MainItem>() {
             override fun areItemsTheSame(oldItem: MainItem, newItem: MainItem): Boolean = oldItem == newItem
@@ -500,12 +550,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val LOG_TAG = "MainActivity"
-        private const val SERVER_URL = BuildConfig.SERVER_URL
         private const val REQUEST_BLUETOOTH_PERMISSIONS = 1001
         private const val SCAN_DURATION_MS = 15000L
         private const val CONNECTION_TIMEOUT_MS = 10000
-        private const val DATE_FORMAT = "yyyy-MM-dd HH:mm"
         private val HTTP_SUCCESS_RANGE = 200..299
     }
 }

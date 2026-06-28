@@ -16,7 +16,7 @@
             android:id="@+id/toolbarEncyclopedia"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Lexikon"
+            app:title="Encyoclopedia"
             app:titleTextColor="@color/text_main" />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -29,7 +29,7 @@
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            android:hint="Suchen...">
+            android:hint="Search...">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editSearchEncyclopedia"

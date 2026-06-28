@@ -1,8 +1,9 @@
 package com.example.plant_sensor.data.remote
 
+import android.content.Context
 import android.util.Log
-import com.example.plant_sensor.BuildConfig
 import com.example.plant_sensor.data.model.PlantReference
+import com.example.plant_sensor.util.SettingsManager
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
@@ -19,12 +20,13 @@ import java.net.URLEncoder
 object PlantDatabase {
 
     private const val LOG_TAG = "PlantDatabase"
-    private const val SERVER_URL =BuildConfig.SERVER_URL
-    private const val CONNECTION_TIMEOUT_MS = 500
-    private const val READ_TIMEOUT_MS = 1000
+    private const val CONNECTION_TIMEOUT_MS = 1000
+    private const val READ_TIMEOUT_MS = 2000
     private const val CHARSET_UTF_8 = "UTF-8"
     private val HTTP_SUCCESS_RANGE = 200..299
     private val gson = GsonBuilder().create()
+
+    private var settingsManager: SettingsManager? = null
 
     var plantReferences: List<PlantReference> = emptyList()
         private set
@@ -32,7 +34,24 @@ object PlantDatabase {
     private val referenceCache = mutableMapOf<String, PlantReference>()
     private var isLoaded = false
 
-    fun loadIfNeeded(onComplete: () -> Unit) {
+    private fun initSettings(context: Context) {
+        if (settingsManager == null) {
+            settingsManager = SettingsManager(context.applicationContext)
+        }
+    }
+
+    private fun getServerUrl(): String {
+        return settingsManager?.getServerUrl() ?: ""
+    }
+
+    fun invalidate() {
+        isLoaded = false
+        plantReferences = emptyList()
+        referenceCache.clear()
+    }
+
+    fun loadIfNeeded(context: Context, onComplete: () -> Unit) {
+        initSettings(context)
         if (isLoaded && plantReferences.isNotEmpty()) {
             onComplete()
             return
@@ -47,7 +66,10 @@ object PlantDatabase {
     }
 
     private suspend fun loadAllReferences() {
-        val json = performGetRequest("$SERVER_URL/plant_references") ?: return
+        val baseUrl = getServerUrl()
+        if (baseUrl.isEmpty()) return
+        
+        val json = performGetRequest("$baseUrl/plant_references") ?: return
         try {
             val type = object : TypeToken<List<PlantReference>>() {}.type
             val references: List<PlantReference> = gson.fromJson(json, type) ?: emptyList()
@@ -60,8 +82,12 @@ object PlantDatabase {
         }
     }
 
-    suspend fun getPlantReferencesPage(limit: Int, offset: Int): List<PlantReference> {
-        val url = "$SERVER_URL/plant_references_page?limit=$limit&offset=$offset"
+    suspend fun getPlantReferencesPage(context: Context, limit: Int, offset: Int): List<PlantReference> {
+        initSettings(context)
+        val baseUrl = getServerUrl()
+        if (baseUrl.isEmpty()) return emptyList()
+
+        val url = "$baseUrl/plant_references_page?limit=$limit&offset=$offset"
         val json = performGetRequest(url) ?: return emptyList()
         return try {
             val type = object : TypeToken<List<PlantReference>>() {}.type
@@ -76,14 +102,17 @@ object PlantDatabase {
         return if (pid.isNullOrBlank()) null else referenceCache[pid]
     }
 
-    suspend fun getByPidFromServer(pid: String?): PlantReference? = withContext(Dispatchers.IO) {
-        if (pid.isNullOrBlank()) return@withContext null
+    suspend fun getByPidFromServer(context: Context, pid: String?): PlantReference? = withContext(Dispatchers.IO) {
+        initSettings(context)
+        val baseUrl = getServerUrl()
+        if (pid.isNullOrBlank() || baseUrl.isEmpty()) return@withContext null
+        
         val cachedReference = referenceCache[pid]
         if (cachedReference != null && hasCareGuide(cachedReference)) {
             return@withContext cachedReference
         }
         val encodedPid = URLEncoder.encode(pid.trim(), CHARSET_UTF_8).replace("+", "%20")
-        val json = performGetRequest("$SERVER_URL/plant_reference?pid=$encodedPid")
+        val json = performGetRequest("$baseUrl/plant_reference?pid=$encodedPid")
         if (json == null) return@withContext cachedReference
         try {
             val reference = gson.fromJson(json, PlantReference::class.java)
@@ -103,10 +132,13 @@ object PlantDatabase {
                 !reference.fertilization.isNullOrBlank()
     }
 
-    suspend fun searchPlants(query: String): List<PlantReference> = withContext(Dispatchers.IO) {
-        if (query.isBlank()) return@withContext emptyList()
+    suspend fun searchPlants(context: Context, query: String): List<PlantReference> = withContext(Dispatchers.IO) {
+        initSettings(context)
+        val baseUrl = getServerUrl()
+        if (query.isBlank() || baseUrl.isEmpty()) return@withContext emptyList()
+        
         val encodedQuery = URLEncoder.encode(query, CHARSET_UTF_8)
-        val json = performGetRequest("$SERVER_URL/search_plants?q=$encodedQuery") ?: return@withContext emptyList()
+        val json = performGetRequest("$baseUrl/search_plants?q=$encodedQuery") ?: return@withContext emptyList()
         try {
             val type = object : TypeToken<List<PlantReference>>() {}.type
             gson.fromJson(json, type) ?: emptyList()

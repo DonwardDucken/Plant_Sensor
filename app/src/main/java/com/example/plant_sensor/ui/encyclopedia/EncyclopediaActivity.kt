@@ -13,7 +13,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -107,7 +106,7 @@ class EncyclopediaActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
             try {
-                val nextBatch = PlantDatabase.getPlantReferencesPage(PAGE_SIZE, currentOffset)
+                val nextBatch = PlantDatabase.getPlantReferencesPage(this@EncyclopediaActivity, PAGE_SIZE, currentOffset)
                 if (nextBatch.isEmpty()) {
                     isLastPage = true
                 } else {
@@ -134,7 +133,7 @@ class EncyclopediaActivity : AppCompatActivity() {
                 }
                 isSearching = true
                 progressBar.visibility = View.VISIBLE
-                val results = PlantDatabase.searchPlants(query)
+                val results = PlantDatabase.searchPlants(this@EncyclopediaActivity, query)
                 adapter.updateData(results)
             } catch (exception: Exception) {
                 Log.e(LOG_TAG, "Error searching plants", exception)

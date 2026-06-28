@@ -56,6 +56,12 @@
             android:exported="false"
             android:label="Lexikon" />
 
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:theme="@style/Theme.Plant_sensor"
+            android:exported="false"
+            android:label="Settings" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

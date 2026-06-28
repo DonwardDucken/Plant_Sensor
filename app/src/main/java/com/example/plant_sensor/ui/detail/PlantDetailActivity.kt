@@ -27,6 +27,7 @@ import com.example.plant_sensor.data.model.PlantReference
 import com.example.plant_sensor.data.remote.PlantDatabase
 import com.example.plant_sensor.ui.customviews.HistoryChartView
 import com.example.plant_sensor.ui.customviews.SensorRangeView
+import com.example.plant_sensor.util.SettingsManager
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.GsonBuilder
@@ -40,7 +41,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
-import com.example.plant_sensor.BuildConfig
 
 /**
  * Shows details for one plant.
@@ -55,8 +55,9 @@ class PlantDetailActivity : AppCompatActivity() {
     private var currentRoom: String = ""
     private var currentCareHints: String? = null
 
-    private val rooms = mutableListOf("Living Room", "Kitchen", "Balcony")
+    private val rooms = mutableListOf<String>()
     private val gson = GsonBuilder().create()
+    private lateinit var settingsManager: SettingsManager
 
     private lateinit var imageHeader: ImageView
     private lateinit var chart: HistoryChartView
@@ -78,6 +79,7 @@ class PlantDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plant_detail)
 
+        settingsManager = SettingsManager(this)
         setupToolbar()
         bindViews()
         readIntentValues()
@@ -141,7 +143,7 @@ class PlantDetailActivity : AppCompatActivity() {
         val imageUriString = intent.getStringExtra("imageUri")
 
         lifecycleScope.launch {
-            plantRef = PlantDatabase.getByPidFromServer(speciesId)
+            plantRef = PlantDatabase.getByPidFromServer(this@PlantDetailActivity, speciesId)
             setupUi(currentName, currentRoom, lastWatered, isEncyclopedia, imageUriString)
             updateRangeBars(null)
             if (!isEncyclopedia) {
@@ -155,7 +157,7 @@ class PlantDetailActivity : AppCompatActivity() {
         if (plantId == INVALID_ID) return
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val jsonResponse = fetchUrl("$SERVER_URL/plants")
+                val jsonResponse = fetchUrl("${settingsManager.getServerUrl()}/plants")
                 val type = object : TypeToken<List<Plant>>() {}.type
                 val loadedPlants: List<Plant> = gson.fromJson(jsonResponse, type) ?: emptyList()
                 val currentPlant = loadedPlants.find { it.id == plantId }
@@ -269,12 +271,27 @@ class PlantDetailActivity : AppCompatActivity() {
 
     private fun setupButtons(editImageButton: View) {
         findViewById<Button>(R.id.buttonWaterNow).setOnClickListener {
-            val now = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(Date())
-            textLastWatered.text = now
-            if (plantId != INVALID_ID) updateLastWateredOnServer(now)
-            Toast.makeText(this, getString(R.string.toast_watered, currentName), Toast.LENGTH_SHORT).show()
+            showWateringConfirmationDialog()
         }
         editImageButton.setOnClickListener { pickImageLauncher.launch("image/*") }
+    }
+
+    private fun showWateringConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_water_title)
+            .setMessage(R.string.dialog_water_message)
+            .setPositiveButton(R.string.button_water) { _, _ ->
+                performWatering()
+            }
+            .setNegativeButton(R.string.button_cancel, null)
+            .show()
+    }
+
+    private fun performWatering() {
+        val now = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(Date())
+        textLastWatered.text = now
+        if (plantId != INVALID_ID) updateLastWateredOnServer(now)
+        Toast.makeText(this, getString(R.string.toast_watered, currentName), Toast.LENGTH_SHORT).show()
     }
 
     private fun updateCareHintsDisplay() {
@@ -338,7 +355,7 @@ class PlantDetailActivity : AppCompatActivity() {
     private fun loadRoomsFromServer() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val jsonResponse = fetchUrl("$SERVER_URL/plants")
+                val jsonResponse = fetchUrl("${settingsManager.getServerUrl()}/plants")
                 val type = object : TypeToken<List<Plant>>() {}.type
                 val loadedPlants: List<Plant> = gson.fromJson(jsonResponse, type) ?: emptyList()
                 withContext(Dispatchers.Main) {
@@ -370,13 +387,13 @@ class PlantDetailActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val json = JSONObject().apply { put("id", plantId); put("plant_name", newName); put("room", newRoom) }
-                postUrl("$SERVER_URL/update_plant", json)
+                postUrl("${settingsManager.getServerUrl()}/update_plant", json)
                 withContext(Dispatchers.Main) {
                     currentName = newName; currentRoom = newRoom; textPlantName.text = newName; textPlantRoom.text = newRoom
-                    Toast.makeText(this@PlantDetailActivity, "Änderungen gespeichert", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PlantDetailActivity, "Changes saved", Toast.LENGTH_SHORT).show()
                 }
             } catch (exception: Exception) {
-                withContext(Dispatchers.Main) { Toast.makeText(this@PlantDetailActivity, "Fehler: ${exception.localizedMessage}", Toast.LENGTH_LONG).show() }
+                withContext(Dispatchers.Main) { Toast.makeText(this@PlantDetailActivity, "Error: ${exception.localizedMessage}", Toast.LENGTH_LONG).show() }
             }
         }
     }
@@ -395,7 +412,7 @@ class PlantDetailActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val json = JSONObject().apply { put("id", plantId) }
-                postUrl("$SERVER_URL/delete_plant", json)
+                postUrl("${settingsManager.getServerUrl()}/delete_plant", json)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@PlantDetailActivity, getString(R.string.toast_plant_deleted), Toast.LENGTH_SHORT).show()
                     finish()
@@ -423,7 +440,7 @@ class PlantDetailActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val json = JSONObject().apply { put("id", plantId); put("care_hints", hints) }
-                postUrl("$SERVER_URL/update_plant", json)
+                postUrl("${settingsManager.getServerUrl()}/update_plant", json)
             } catch (exception: Exception) {
                 Log.e(LOG_TAG, "Error updating care hints", exception)
             }
@@ -434,7 +451,7 @@ class PlantDetailActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val json = JSONObject().apply { put("id", plantId); put("last_watered", date) }
-                postUrl("$SERVER_URL/update_plant", json)
+                postUrl("${settingsManager.getServerUrl()}/update_plant", json)
             } catch (exception: Exception) {
                 Log.e(LOG_TAG, "Error updating last watered", exception)
             }
@@ -452,7 +469,7 @@ class PlantDetailActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val json = JSONObject().apply { put("id", plantId); put("image_uri", uri) }
-                postUrl("$SERVER_URL/update_plant", json)
+                postUrl("${settingsManager.getServerUrl()}/update_plant", json)
             } catch (exception: Exception) {
                 Log.e(LOG_TAG, "Error updating image", exception)
             }
@@ -469,8 +486,8 @@ class PlantDetailActivity : AppCompatActivity() {
     private fun refreshData(mac: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val latestJson = fetchUrl("$SERVER_URL/sensor?mac=$mac")
-                val historyJson = fetchUrl("$SERVER_URL/history?mac=$mac")
+                val latestJson = fetchUrl("${settingsManager.getServerUrl()}/sensor?mac=$mac")
+                val historyJson = fetchUrl("${settingsManager.getServerUrl()}/history?mac=$mac")
                 val type = object : TypeToken<List<HistoryRawPoint>>() {}.type
                 val rawPoints: List<HistoryRawPoint> = gson.fromJson(historyJson, type) ?: emptyList()
                 historyData = parseHistoryPoints(rawPoints)
@@ -538,11 +555,28 @@ class PlantDetailActivity : AppCompatActivity() {
 
     private fun postUrl(urlString: String, json: JSONObject) {
         val connection = openConnection(urlString)
+
         connection.requestMethod = "POST"
-        connection.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+        connection.setRequestProperty("Content-Type", "application/json")
         connection.doOutput = true
-        try { OutputStreamWriter(connection.outputStream, "UTF-8").use { it.write(json.toString()); it.flush() }
-        } finally { connection.disconnect() }
+
+        try {
+            OutputStreamWriter(connection.outputStream).use {
+                it.write(json.toString())
+            }
+
+            val responseCode = connection.responseCode
+            Log.d("PlantDetailActivity", "POST Response: $responseCode")
+            Log.d("PlantDetailActivity", "POST JSON: ${json.toString(2)}")
+
+            if (responseCode !in HTTP_SUCCESS_RANGE) {
+                val error = connection.errorStream?.bufferedReader()?.readText()
+                throw Exception("HTTP $responseCode\n$error")
+            }
+
+        } finally {
+            connection.disconnect()
+        }
     }
 
     private fun openConnection(urlString: String): HttpURLConnection {
@@ -571,7 +605,6 @@ class PlantDetailActivity : AppCompatActivity() {
 
     companion object {
         private const val LOG_TAG = "PlantDetailActivity"
-        private const val SERVER_URL = BuildConfig.SERVER_URL
         private const val INVALID_ID = -1L
         private const val CONNECTION_TIMEOUT_MS = 8000
         private const val DATE_FORMAT = "yyyy-MM-dd HH:mm"

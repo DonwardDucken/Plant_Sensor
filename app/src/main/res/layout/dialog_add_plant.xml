@@ -52,25 +52,23 @@
         android:textSize="12sp"
         app:icon="@android:drawable/ic_input_add" />
 
-    <TextView
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/label_plant_type"
-        android:textSize="12sp"
-        android:textColor="@color/text_secondary"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="4dp" />
+        android:hint="@string/label_plant_type"
+        android:layout_marginTop="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/room_card_bg"
-        android:padding="4dp">
-        <Spinner
-            android:id="@+id/spinnerSpecies"
+        <AutoCompleteTextView
+            android:id="@+id/editSpecies"
             android:layout_width="match_parent"
-            android:layout_height="48dp" />
-    </FrameLayout>
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <View
         android:layout_width="match_parent"
