@@ -92,27 +92,6 @@ Example endpoints:
 
 ---
 
-## Configuration
-
-The backend server address is configured using
-
-```
-
-BuildConfig.SERVER_URL
-
-```
-
-For testing on a physical Android device, replace the server address with the local IP address of the backend computer.
-
-For emulator testing, use
-
-```
-
-http://10.0.2.2:8080
-
-```
-
----
 
 ## Plant Reference Data
 
@@ -134,8 +113,7 @@ These ranges are used to visualize whether the current sensor values are inside 
 
 1. Start the Python backend.
 2. Make sure the backend database is available.
-3. Configure `BuildConfig.SERVER_URL`.
-4. Build and run the Android application.
+3. Build and run the Android application.
 
 ---
 
